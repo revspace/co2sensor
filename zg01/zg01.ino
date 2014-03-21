@@ -4,6 +4,7 @@
 
 #define PIN_CLOCK   2
 #define PIN_DATA    3
+#define PIN_LED     13
 
 static uint8_t buffer[5];
 
@@ -12,6 +13,9 @@ void setup(void)
     // initialize ZG01 pins
     pinMode(PIN_CLOCK, INPUT);
     pinMode(PIN_DATA, INPUT);
+
+    // initialize LED
+    pinMode(PIN_LED, OUTPUT);
 
     // initialize serial port
     Serial.begin(9600);
@@ -25,6 +29,9 @@ void loop(void)
 {
     // wait until clock is low
     while (digitalRead(PIN_CLOCK) != LOW);
+
+    // indicate activity on LED
+    digitalWrite(PIN_LED, HIGH);
     
     // sample data and process in the ZG01 state machine
     uint8_t data = (digitalRead(PIN_DATA) == HIGH) ? 1 : 0;
@@ -42,6 +49,9 @@ void loop(void)
 
     // wait until clock is high again
     while (digitalRead(PIN_CLOCK) == LOW);    
+
+    // indicate activity on LED
+    digitalWrite(PIN_LED, LOW);
 }
 
 
