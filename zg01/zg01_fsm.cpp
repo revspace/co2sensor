@@ -36,7 +36,7 @@ bool zg01_process(unsigned long ms, uint8_t data)
     // number of bits received is basically the "state"
     if (s->num_bits < 40) {
         // store it while it fits
-        int idx = s->num_bits % 8;
+        int idx = s->num_bits / 8;
         s->buffer[idx] = (s->buffer[idx] << 1) | data;
         // are we done yet?
         s->num_bits++;
