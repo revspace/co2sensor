@@ -89,6 +89,38 @@ static bool test3(void)
     return true;
 }
 
+static int sendbyte(unsigned long millis, uint8_t b)
+{
+    unsigned long ms = millis;
+
+    for (int i = 0; i < 8; i++) {
+        zg01_process(ms++, (b & (128 >> i)) ? 1 : 0);
+    }
+    return ms;
+}
+
+static bool test4(void)
+{
+    uint8_t buffer[5];
+
+    memset(buffer, 0, sizeof(buffer));
+    zg01_init(buffer);
+    unsigned long ms = 0;
+    ms = sendbyte(ms, 'B');
+    ms = sendbyte(ms, 0x02);
+    ms = sendbyte(ms, 0x58);
+    ms = sendbyte(ms, 0xAA);
+    ms = sendbyte(ms, 0x0D);
+
+    uint8_t expected[] = {0x42, 0x02, 0x58, 0xAA, 0x0D};
+    if (memcmp(expected, buffer, 5) != 0) {
+        fprintf(stderr, "buffer contents mismatch!\n");
+        return false;
+    }
+
+    return true;
+}
+
 // prototype for a test function
 typedef bool (testfunc_t)(void);
 
@@ -103,6 +135,7 @@ static const test_t testfuncs[] = {
     { test1, "Happy flow" },
     { test2, "Time reset" },
     { test3, "Overflow" },
+    { test4, "CO2 message" },
     { NULL, ""}
 };
 
