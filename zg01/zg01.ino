@@ -41,7 +41,7 @@ void loop(void)
     // process data if ready
     if (ready) {
         for (int i = 0; i < 5; i++) {
-            Serial.print(HEX, buffer[i]);
+            Serial.print(buffer[i], HEX);
             Serial.print(" ");
         }
         Serial.println();
