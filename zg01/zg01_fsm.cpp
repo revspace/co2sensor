@@ -7,7 +7,7 @@
 typedef struct {
     uint8_t *buffer;
     int num_bits;
-    int prev_ms;
+    unsigned long prev_ms;
 } fsm_t;
 
 static fsm_t fsm;
