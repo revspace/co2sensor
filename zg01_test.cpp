@@ -121,6 +121,27 @@ static bool test4(void)
     return true;
 }
 
+static bool test_ms_overflow(void)
+{
+    uint8_t buffer[5];
+
+    memset(buffer, 0xAA, sizeof(buffer));
+    zg01_init(buffer);
+    unsigned long ms = -20;
+
+    for (int i = 0; i < 5; i++) {
+        ms = sendbyte(ms, 0x55);
+    }
+
+    uint8_t expected[] = {0x55, 0x55, 0x55, 0x55, 0x55};
+    if (memcmp(expected, buffer, 5) != 0) {
+        fprintf(stderr, "buffer contents mismatch!\n");
+        return false;
+    }
+
+    return true;
+}
+
 // prototype for a test function
 typedef bool (testfunc_t)(void);
 
@@ -136,6 +157,7 @@ static const test_t testfuncs[] = {
     { test2, "Time reset" },
     { test3, "Overflow" },
     { test4, "CO2 message" },
+    { test_ms_overflow, "Time overflow" },
     { NULL, ""}
 };
 
