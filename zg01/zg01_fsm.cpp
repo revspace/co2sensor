@@ -25,7 +25,7 @@ void zg01_init(uint8_t buffer[5])
     fsm_reset();
 }
 
-bool zg01_process(unsigned long ms, uint8_t data)
+bool zg01_process(unsigned long ms, bool data)
 {
     // check if a new message has started, based on time since previous bit
     if ((ms - s->prev_ms) > ZG01_MAX_MS) {
@@ -37,7 +37,7 @@ bool zg01_process(unsigned long ms, uint8_t data)
     if (s->num_bits < 40) {
         // store it while it fits
         int idx = s->num_bits / 8;
-        s->buffer[idx] = (s->buffer[idx] << 1) | data;
+        s->buffer[idx] = (s->buffer[idx] << 1) | (data ? 1 : 0);
         // are we done yet?
         s->num_bits++;
         if (s->num_bits == 40) {

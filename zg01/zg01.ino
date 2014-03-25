@@ -43,7 +43,7 @@ void loop(void)
     while (digitalRead(PIN_CLOCK) != LOW);
 
     // sample data and process in the ZG01 state machine
-    uint8_t data = (digitalRead(PIN_DATA) == HIGH) ? 1 : 0;
+    bool data = (digitalRead(PIN_DATA) == HIGH);
     unsigned long ms = millis();
     bool ready = zg01_process(ms, data);
     
