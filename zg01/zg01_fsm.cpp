@@ -1,7 +1,7 @@
 #include "zg01_fsm.h"
 
 // max time between ZG01 bits, until a new frame is assumed to have started
-#define ZG01_MAX_MS  3
+#define ZG01_MAX_MS  2
 
 // all of the state of the FSM
 typedef struct {
