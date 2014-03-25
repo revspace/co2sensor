@@ -24,7 +24,7 @@ void setup(void)
     pinMode(PIN_DATA, INPUT);
 
     // initialize serial port
-    Serial.begin(9600);
+    Serial.begin(115200);
     Serial.println("Hello world!\n");
     
     // initialize ZG01 finite state machine
