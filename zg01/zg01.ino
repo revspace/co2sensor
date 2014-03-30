@@ -15,7 +15,7 @@ static long int address = 0x66996699L;  // So that's 0x0066996699
 const int tries = 1;
 
 static uint8_t buffer[5];
-static RF24 rf(/*ce*/ 8, /*cs*/ 10);
+static RF24 rf(/*ce*/ 8, /*cs*/ 9);
 
 void setup(void)
 {
@@ -32,6 +32,7 @@ void setup(void)
     
     // init RF24
     rf.begin();
+    rf.setAutoAck(true);
     rf.setRetries(15, 15);
     rf.enableDynamicPayloads();
     rf.openWritingPipe(address);
@@ -46,7 +47,7 @@ void loop(void)
     bool data = (digitalRead(PIN_DATA) == HIGH);
     unsigned long ms = millis();
     bool ready = zg01_process(ms, data);
-    
+
     // process data if ready
     if (ready) {
         // dump buffer to serial
@@ -66,19 +67,19 @@ void loop(void)
         // send CO2 measurement over RF24
         if (buffer[0] == 'P') {
             // construct buffer: [length]"CO_2"[ppm high byte][ppm low byte]
-            uint8_t buf[8];
+            uint8_t buf[7];
             buf[0] = 6;
             memcpy(&buf[1], "CO_2", 4);
             memcpy(&buf[5], &buffer[1], 2);
             // dump send buffer
             Serial.print("Send:");
-            for (int i = 0; i < 6; i++) {
-                Serial.print(buf[i], HEX);
+            for (int i = 0; i < sizeof(buf); i++) {
                 Serial.print(" ");
+                Serial.print(buf[i], HEX);
             }
             Serial.println();
             // send it
-            rf.write(&buf, 7);
+            rf.write(&buf, sizeof(buf));
         }
     }
 
