@@ -65,11 +65,11 @@ void loop(void)
         uint8_t chk = buffer[0] + buffer[1] + buffer[2];        
         
         // send CO2 measurement over RF24
-        if (buffer[0] == 'P') {
+        if (buffer[0] == 'P' || buffer[0] == 'A') {
             // construct buffer: [length]"CO_2"[ppm high byte][ppm low byte]
             uint8_t buf[7];
             buf[0] = 6;
-            memcpy(&buf[1], "CO_2", 4);
+            memcpy(&buf[1], (buffer[0] == 'P' ? "CO_2" : "HUMI"), 4);
             memcpy(&buf[5], &buffer[1], 2);
             // dump send buffer
             Serial.print("Send:");
