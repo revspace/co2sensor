@@ -6,10 +6,10 @@
 
 #include "zg01_fsm.h"
 
-#define PIN_CLOCK   2
-#define PIN_DATA    3
+#define PIN_CLOCK   D1
+#define PIN_DATA    D2
 
-#define MQTT_HOST   "revspace.nl"
+#define MQTT_HOST   "mosquitto.space.revspace.nl"
 #define MQTT_PORT   1883
 
 #define TOPIC_CO2       "revspace/sensors/co2"
@@ -54,24 +54,13 @@ static void mqtt_send(const char *topic, int value, const char *unit)
         char string[64];
         snprintf(string, sizeof(string), "%d %s", value, unit);
         Serial.print("Publishing ");
-        Serial.print(value);
+        Serial.print(string);
         Serial.print(" to ");
         Serial.print(topic);
         Serial.print("...");
         int result = mqttClient.publish(topic, string, true);
         Serial.println(result ? "OK" : "FAIL");
     }    
-}
-
-static void hexdump(const char *buf, int len)
-{
-    char tmp[8];
-    int i;
-    for (i = 0; i < sizeof(buffer); i++) {
-        snprintf(tmp, sizeof(tmp), " %02X", buffer[i]);
-        Serial.print(tmp); 
-    }
-    Serial.println();
 }
 
 void loop(void)
@@ -87,10 +76,6 @@ void loop(void)
         unsigned long ms = millis();
         bool ready = zg01_process(ms, data);
         if (ready) {
-            // dump raw buffer
-            Serial.print("RAW:");
-            hexdump(buffer, sizeof(buffer));
-        
             // get item and binary value
             uint8_t item = buffer[0];
             uint16_t value = buffer[1] << 8 | buffer[2];
@@ -98,7 +83,7 @@ void loop(void)
             switch (item) {
             case 'P':
                 // CO2
-                mqtt_send(TOPIC_CO2, value, "ppm");
+                mqtt_send(TOPIC_CO2, value, "PPM");
                 break;
             case 'A':
                 // humidity
