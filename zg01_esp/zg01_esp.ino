@@ -87,7 +87,7 @@ void loop(void)
                 break;
             case 'A':
                 // humidity
-                mqtt_send(TOPIC_HUMIDITY, value / 100, "%");
+                mqtt_send(TOPIC_HUMIDITY, (value + 50) / 100, "%");
                 break;
             default:
                 // ignore unhandled packet
