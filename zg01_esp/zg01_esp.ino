@@ -44,21 +44,19 @@ void setup(void)
     wifiManager.autoConnect("ESP-ZG01");
 }
 
-static void mqtt_send(const char *topic, int value, const char *unit)
+static void mqtt_send(const char *topic, const char *value)
 {
     if (!mqttClient.connected()) {
         mqttClient.setServer(MQTT_HOST, MQTT_PORT);
         mqttClient.connect(esp_id);
     }
     if (mqttClient.connected()) {
-        char string[64];
-        snprintf(string, sizeof(string), "%d %s", value, unit);
         Serial.print("Publishing ");
-        Serial.print(string);
+        Serial.print(value);
         Serial.print(" to ");
         Serial.print(topic);
         Serial.print("...");
-        int result = mqttClient.publish(topic, string, true);
+        int result = mqttClient.publish(topic, value, true);
         Serial.println(result ? "OK" : "FAIL");
     }    
 }
@@ -66,6 +64,7 @@ static void mqtt_send(const char *topic, int value, const char *unit)
 void loop(void)
 {
     static bool prev_clk = false;
+    char valstr[16];
     
     bool clk = (digitalRead(PIN_CLOCK) == HIGH);
     if (prev_clk && !clk) {
@@ -83,11 +82,13 @@ void loop(void)
             switch (item) {
             case 'P':
                 // CO2
-                mqtt_send(TOPIC_CO2, value, "PPM");
+                snprintf(valstr, sizeof(valstr), "%d PPM", value);
+                mqtt_send(TOPIC_CO2, valstr);
                 break;
             case 'A':
                 // humidity
-                mqtt_send(TOPIC_HUMIDITY, (value + 50) / 100, "%");
+                snprintf(valstr, sizeof(valstr), "%d.%02d %%", value / 100, value % 100);
+                mqtt_send(TOPIC_HUMIDITY, valstr);
                 break;
             default:
                 // ignore unhandled packet
