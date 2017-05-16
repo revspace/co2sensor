@@ -14,6 +14,7 @@
 
 #define TOPIC_CO2       "revspace/sensors/co2"
 #define TOPIC_HUMIDITY  "revspace/sensors/humidity"
+#define TOPIC_TEMPERATURE "revspace/sensors/temperature"
 
 static uint8_t buffer[5];
 static char esp_id[16];
@@ -65,6 +66,7 @@ void loop(void)
 {
     static bool prev_clk = false;
     char valstr[16];
+    int temp10;
     
     bool clk = (digitalRead(PIN_CLOCK) == HIGH);
     if (prev_clk && !clk) {
@@ -89,6 +91,12 @@ void loop(void)
                 // humidity
                 snprintf(valstr, sizeof(valstr), "%d.%02d %%", value / 100, value % 100);
                 mqtt_send(TOPIC_HUMIDITY, valstr);
+                break;
+            case 'B':
+                // temperature
+                temp10 = (5 * value - 21848) / 8;
+                snprintf(valstr, sizeof(valstr), "%d.%d °C", temp10 / 10, abs(temp10) % 10);
+                mqtt_send(TOPIC_TEMPERATURE, valstr);
                 break;
             default:
                 // ignore unhandled packet
