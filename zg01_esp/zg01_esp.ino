@@ -119,7 +119,7 @@ void loop(void)
             case 'B':
                 // temperature
                 temp16 = value - 4370;
-                snprintf(valstr, sizeof(valstr), "%d.%d °C", temp16 / 16, frac16(temp16));
+                snprintf(valstr, sizeof(valstr), "%d.%s °C", temp16 / 16, frac16(temp16));
                 mqtt_send(TOPIC_TEMPERATURE, valstr);
                 break;
             default:
