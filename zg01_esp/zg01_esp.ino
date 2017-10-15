@@ -62,11 +62,35 @@ static void mqtt_send(const char *topic, const char *value)
     }    
 }
 
+static char *frac16(int value)
+{
+    int frac = abs(value) % 16;
+    switch (frac) {
+    default:
+    case 0:     return ".0000";
+    case 1:     return ".0625";
+    case 2:     return ".1250";
+    case 3:     return ".1875";
+    case 4:     return ".2500";
+    case 5:     return ".3125";
+    case 6:     return ".3750";
+    case 7:     return ".4375";
+    case 8:     return ".5000";
+    case 9:     return ".5625";
+    case 10:    return ".6250";
+    case 11:    return ".6875";
+    case 12:    return ".7500";
+    case 13:    return ".8125";
+    case 14:    return ".8750";
+    case 15:    return ".9375";
+    }
+}
+
 void loop(void)
 {
     static bool prev_clk = false;
     char valstr[16];
-    int temp10;
+    int temp16;
     
     bool clk = (digitalRead(PIN_CLOCK) == HIGH);
     if (prev_clk && !clk) {
@@ -94,8 +118,8 @@ void loop(void)
                 break;
             case 'B':
                 // temperature
-                temp10 = (5 * value - 21848) / 8;
-                snprintf(valstr, sizeof(valstr), "%d.%d °C", temp10 / 10, abs(temp10) % 10);
+                temp16 = value - 4370;
+                snprintf(valstr, sizeof(valstr), "%d.%d °C", temp16 / 16, frac16(temp16));
                 mqtt_send(TOPIC_TEMPERATURE, valstr);
                 break;
             default:
