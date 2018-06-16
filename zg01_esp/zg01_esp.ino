@@ -105,5 +105,8 @@ void loop(void)
         }
     }
     prev_clk = clk;
+
+    // keep mqtt alive
+    mqttClient.loop();
 }
 
