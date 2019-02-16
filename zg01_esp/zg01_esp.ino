@@ -42,14 +42,18 @@ void setup(void)
     zg01_init(buffer);
 
     Serial.println("Starting WIFI manager ...");
+    wifiManager.setConfigPortalTimeout(120);
     wifiManager.autoConnect("ESP-ZG01");
 }
 
-static void mqtt_send(const char *topic, const char *value)
+static bool mqtt_send(const char *topic, const char *value, bool retained)
 {
+    bool result = false;
     if (!mqttClient.connected()) {
+        Serial.print("Connecting MQTT...");
         mqttClient.setServer(MQTT_HOST, MQTT_PORT);
-        mqttClient.connect(esp_id);
+        result = mqttClient.connect(esp_id, topic, 0, retained, "offline");
+        Serial.println(result ? "OK" : "FAIL");
     }
     if (mqttClient.connected()) {
         Serial.print("Publishing ");
@@ -57,9 +61,10 @@ static void mqtt_send(const char *topic, const char *value)
         Serial.print(" to ");
         Serial.print(topic);
         Serial.print("...");
-        int result = mqttClient.publish(topic, value, true);
+        result = mqttClient.publish(topic, value, retained);
         Serial.println(result ? "OK" : "FAIL");
-    }    
+    }
+    return result;
 }
 
 void loop(void)
@@ -85,18 +90,18 @@ void loop(void)
             case 'P':
                 // CO2
                 snprintf(valstr, sizeof(valstr), "%d PPM", value);
-                mqtt_send(TOPIC_CO2, valstr);
+                mqtt_send(TOPIC_CO2, valstr, true);
                 break;
             case 'A':
                 // humidity
                 snprintf(valstr, sizeof(valstr), "%d.%02d %%", value / 100, value % 100);
-                mqtt_send(TOPIC_HUMIDITY, valstr);
+                mqtt_send(TOPIC_HUMIDITY, valstr, true);
                 break;
             case 'B':
                 // temperature
                 temp10 = (5 * value - 21848) / 8;
                 snprintf(valstr, sizeof(valstr), "%d.%d °C", temp10 / 10, abs(temp10) % 10);
-                mqtt_send(TOPIC_TEMPERATURE, valstr);
+                mqtt_send(TOPIC_TEMPERATURE, valstr, true);
                 break;
             default:
                 // ignore unhandled packet
@@ -108,5 +113,11 @@ void loop(void)
 
     // keep mqtt alive
     mqttClient.loop();
+
+    // verify network connection and reboot on failure
+    if (WiFi.status() != WL_CONNECTED) {
+        Serial.println("Restarting ESP...");
+        ESP.restart();
+    }
 }
 
