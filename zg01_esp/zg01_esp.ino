@@ -4,6 +4,9 @@
 #include <WiFiManager.h>
 #include <PubSubClient.h>
 
+#include <Arduino.h>
+#include <ArduinoOTA.h>
+
 #include "zg01_fsm.h"
 
 #define PIN_CLOCK   D1
@@ -33,6 +36,11 @@ void setup(void)
     sprintf(esp_id, "%08X", ESP.getChipId());
     Serial.print("ESP ID: ");
     Serial.println(esp_id);
+
+    // setup OTA
+    ArduinoOTA.setHostname("esp-co2sensor");
+    ArduinoOTA.setPassword("co2sensor");
+    ArduinoOTA.begin();
 
     // initialize ZG01 pins
     pinMode(PIN_CLOCK, INPUT);
@@ -113,6 +121,9 @@ void loop(void)
 
     // keep mqtt alive
     mqttClient.loop();
+
+    // allow OTA
+    ArduinoOTA.handle();
 
     // verify network connection and reboot on failure
     if (WiFi.status() != WL_CONNECTED) {
