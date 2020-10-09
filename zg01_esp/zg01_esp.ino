@@ -69,6 +69,7 @@ static bool mqtt_send(const char *topic, const char *value, bool retained)
 
 void loop(void)
 {
+    static int errors = 0;
     static bool prev_clk = false;
     char valstr[16];
     int temp10;
@@ -90,18 +91,30 @@ void loop(void)
             case 'P':
                 // CO2
                 snprintf(valstr, sizeof(valstr), "%d PPM", value);
-                mqtt_send(TOPIC_CO2, valstr, true);
+                if (mqtt_send(TOPIC_CO2, valstr, true)) {
+                    errors = 0;
+                } else {
+                    errors++;
+                }
                 break;
             case 'A':
                 // humidity
                 snprintf(valstr, sizeof(valstr), "%d.%02d %%", value / 100, value % 100);
-                mqtt_send(TOPIC_HUMIDITY, valstr, true);
+                if (mqtt_send(TOPIC_HUMIDITY, valstr, true)) {
+                    errors = 0;
+                } else {
+                    errors++;
+                }
                 break;
             case 'B':
                 // temperature
                 temp10 = (5 * value - 21848) / 8;
                 snprintf(valstr, sizeof(valstr), "%d.%d °C", temp10 / 10, abs(temp10) % 10);
-                mqtt_send(TOPIC_TEMPERATURE, valstr, true);
+                if (mqtt_send(TOPIC_TEMPERATURE, valstr, true)) {
+                    errors = 0;
+                } else {
+                    errors++;
+                }
                 break;
             default:
                 // ignore unhandled packet
@@ -114,8 +127,8 @@ void loop(void)
     // keep mqtt alive
     mqttClient.loop();
 
-    // verify network connection and reboot on failure
-    if (WiFi.status() != WL_CONNECTED) {
+    // reboot on too many errors
+    if (errors > 10) {
         Serial.println("Restarting ESP...");
         ESP.restart();
     }
